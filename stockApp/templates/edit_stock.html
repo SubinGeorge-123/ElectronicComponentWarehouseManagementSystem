@@ -1,0 +1,191 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Edit Stock | Admin Dashboard</title>
+    <link rel="stylesheet" href="{% static 'css/style.css' %}" />
+    <style>
+      body {
+        font-family: "Poppins", sans-serif;
+        background-color: #f4f6f9;
+        margin: 0;
+        padding: 0;
+        height: 100vh;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+
+      .form-card {
+        background: #fff;
+        border-radius: 16px;
+        box-shadow: 0 6px 20px rgba(0, 0, 0, 0.12);
+        padding: 30px 40px;
+        width: 100%;
+        max-width: 900px;
+        box-sizing: border-box;
+        display: flex;
+        gap: 40px; /* space between image and form */
+      }
+
+      .form-card h2 {
+        text-align: center;
+        color: #1e293b;
+        font-size: 26px;
+        font-weight: 600;
+        margin-top: 0;
+        margin-bottom: 30px;
+        width: 100%;
+      }
+
+      .image-preview {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+      }
+
+      .image-preview img {
+        max-width: 100%;
+        border-radius: 8px;
+        margin-bottom: 20px;
+      }
+
+      .form-fields {
+        flex: 2;
+      }
+
+      .form-fields p {
+        margin-bottom: 18px;
+      }
+
+      label {
+        font-weight: 600;
+        display: block;
+        margin-bottom: 6px;
+        color: #374151;
+      }
+
+      input,
+      select,
+      textarea {
+        width: 100%;
+        padding: 12px 15px;
+        border: 1px solid #d1d5db;
+        border-radius: 8px;
+        font-size: 15px;
+        background-color: #fff;
+        box-sizing: border-box;
+        transition: border-color 0.3s ease;
+      }
+
+      input:focus,
+      select:focus,
+      textarea:focus {
+        border-color: #2563eb;
+        outline: none;
+      }
+
+      .form-actions {
+        display: flex;
+        justify-content: flex-start;
+        gap: 12px;
+        margin-top: 20px;
+      }
+
+      .btn {
+        padding: 10px 22px;
+        border: none;
+        border-radius: 8px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: 0.3s ease;
+      }
+
+      .btn-custom {
+        background-color: #2563eb;
+        color: white;
+      }
+
+      .btn-custom:hover {
+        background-color: #1d4ed8;
+        transform: scale(1.03);
+      }
+
+      .btn-secondary {
+        background-color: #6b7280;
+        color: white;
+      }
+
+      .btn-secondary:hover {
+        background-color: #4b5563;
+        transform: scale(1.03);
+      }
+    </style>
+  </head>
+  <body>
+    <div class="form-card">
+      <!-- Image Section -->
+      <div class="image-preview">
+        {% if stock.image %}
+        <img src="{{ stock.image.url }}" alt="{{ stock.name }}" />
+        {% else %}
+        <img src="{% static 'images/noImage.jpg' %}" alt="No Image" />
+        {% endif %}
+      </div>
+
+      <!-- Form Fields -->
+      <div class="form-fields">
+        <h2>Edit Stock: {{ stock.name }}</h2>
+        <form method="post" enctype="multipart/form-data">
+          {% csrf_token %}
+
+          <p>
+            <label for="{{ form.name.id_for_label }}">Name</label>
+            {{ form.name }} {% if form.name.errors %}{{ form.name.errors }}
+            {% endif %}
+          </p>
+
+          <p>
+            <label for="{{ form.category.id_for_label }}">Category</label>
+            {{ form.category }} {% if form.category.errors %}
+            {{ form.category.errors }}{% endif %}
+          </p>
+
+          <p>
+            <label for="{{ form.quantity.id_for_label }}">Quantity</label>
+            {{ form.quantity }} {% if form.quantity.errors %}
+            {{ form.quantity.errors }}{% endif %}
+          </p>
+
+          <p>
+            <label for="{{ form.price.id_for_label }}">Price (€)</label>
+            {{ form.price }} {% if form.price.errors %}{{ form.price.errors }}
+            {% endif %}
+          </p>
+          <!-- <p>
+            <label for="{{ form.description.id_for_label }}"
+              >Change Image</label
+            >
+            {{ form.description }} {% if form.description.errors %}{{
+            form.description.errors }}{% endif %}
+          </p> -->
+          <p>
+            <label for="{{ form.image.id_for_label }}">Change Image</label>
+            {{ form.image }} {% if form.image.errors %}{{ form.image.errors }}
+            {% endif %}
+          </p>
+
+          <div class="form-actions">
+            <button type="submit" class="btn btn-custom">Save Changes</button>
+            <a href="{% url 'admin_dashboard' %}" class="btn btn-secondary"
+              >Cancel</a
+            >
+          </div>
+        </form>
+      </div>
+    </div>
+  </body>
+</html>

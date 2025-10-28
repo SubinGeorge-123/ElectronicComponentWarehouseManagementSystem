@@ -1,0 +1,168 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>View Request | Admin Dashboard</title>
+    <link rel="stylesheet" href="{% static 'css/style.css' %}" />
+    <style>
+      body {
+        font-family: "Poppins", sans-serif;
+        background-color: #f4f6f9;
+        margin: 0;
+        padding: 0;
+        height: 100vh;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+
+      .form-card {
+        background: #fff;
+        border-radius: 16px;
+        box-shadow: 0 6px 20px rgba(0, 0, 0, 0.12);
+        padding: 40px 50px;
+        width: 100%;
+        max-width: 700px;
+        box-sizing: border-box;
+      }
+
+      .form-card h2 {
+        text-align: center;
+        color: #1e293b;
+        font-size: 26px;
+        font-weight: 600;
+        margin-top: 0;
+        margin-bottom: 30px;
+      }
+
+      .info {
+        margin-bottom: 25px;
+        color: #374151;
+      }
+
+      .info p {
+        margin: 6px 0;
+        font-size: 15px;
+      }
+
+      .info strong {
+        color: #111827;
+      }
+
+      .recommendation {
+        background: #f9fafb;
+        padding: 15px 20px;
+        border-radius: 10px;
+        border: 1px solid #e5e7eb;
+        font-size: 14px;
+        white-space: pre-wrap;
+        color: #374151;
+        margin-bottom: 25px;
+      }
+
+      label {
+        font-weight: 600;
+        display: block;
+        margin-bottom: 6px;
+        color: #374151;
+      }
+
+      textarea {
+        width: 100%;
+        padding: 12px 15px;
+        border: 1px solid #d1d5db;
+        border-radius: 8px;
+        font-size: 15px;
+        background-color: #fff;
+        box-sizing: border-box;
+        transition: border-color 0.3s ease;
+      }
+
+      textarea:focus {
+        border-color: #2563eb;
+        outline: none;
+      }
+
+      .form-actions {
+        display: flex;
+        justify-content: space-between;
+        margin-top: 30px;
+      }
+
+      .btn {
+        padding: 10px 22px;
+        border: none;
+        border-radius: 8px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: 0.3s ease;
+      }
+
+      .btn-success {
+        background-color: #16a34a;
+        color: white;
+      }
+
+      .btn-success:hover {
+        background-color: #15803d;
+        transform: scale(1.03);
+      }
+
+      .btn-danger {
+        background-color: #dc2626;
+        color: white;
+      }
+
+      .btn-danger:hover {
+        background-color: #b91c1c;
+        transform: scale(1.03);
+      }
+
+      .btn-secondary {
+        background-color: #6b7280;
+        color: white;
+      }
+
+      .btn-secondary:hover {
+        background-color: #4b5563;
+        transform: scale(1.03);
+      }
+    </style>
+  </head>
+
+  <body>
+    <div class="form-card">
+      <h2>Request - {{ req.id }}</h2>
+
+      <div class="info">
+        <p><strong>Customer:</strong> {{ req.customer }}</p>
+        <p><strong>Component:</strong> {{ req.stock.name }}</p>
+        <p><strong>Requested Quantity:</strong> {{ req.quantity }}</p>
+      </div>
+
+      <h4 style="color: #1e3a8a; margin-bottom: 10px;">Lambda Recommendation</h4>
+      <div class="recommendation">{{ recommendation }}</div>
+
+      <form method="post">
+        {% csrf_token %}
+        <div class="form-group">
+          <label for="admin_note">Admin Note (optional)</label>
+          <textarea
+            name="admin_note"
+            id="admin_note"
+            rows="3"
+            placeholder="Enter your note here..."
+          ></textarea>
+        </div>
+
+        <div class="form-actions">
+          <button type="submit" name="action" value="approve" class="btn btn-success">Approve</button>
+          <button type="submit" name="action" value="reject" class="btn btn-danger">Reject</button>
+          <a href="{% url 'admin_dashboard' %}" class="btn btn-secondary">Back</a>
+        </div>
+      </form>
+    </div>
+  </body>
+</html>

@@ -1,0 +1,94 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Delete Customer | Admin Dashboard</title>
+    <link rel="stylesheet" href="{% static 'css/style.css' %}" />
+    <style>
+      body {
+        font-family: "Poppins", sans-serif;
+        background-color: #f4f6f9;
+        margin: 0;
+        padding: 0;
+        height: 100vh;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+
+      .form-card {
+        background: #fff;
+        border-radius: 16px;
+        box-shadow: 0 6px 20px rgba(0, 0, 0, 0.12);
+        padding: 40px 50px;
+        width: 100%;
+        max-width: 500px;
+        box-sizing: border-box;
+        text-align: center;
+      }
+
+      h3 {
+        color: #1e293b;
+        font-size: 24px;
+        font-weight: 600;
+        margin-bottom: 20px;
+      }
+
+      p {
+        color: #374151;
+        font-size: 16px;
+        margin-bottom: 30px;
+      }
+
+      .form-actions {
+        display: flex;
+        justify-content: center;
+        gap: 15px;
+      }
+
+      .btn {
+        padding: 10px 22px;
+        border: none;
+        border-radius: 8px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: 0.3s ease;
+      }
+
+      .btn-danger {
+        background-color: #dc2626;
+        color: white;
+      }
+
+      .btn-danger:hover {
+        background-color: #b91c1c;
+        transform: scale(1.03);
+      }
+
+      .btn-secondary {
+        background-color: #6b7280;
+        color: white;
+      }
+
+      .btn-secondary:hover {
+        background-color: #4b5563;
+        transform: scale(1.03);
+      }
+    </style>
+  </head>
+  <body>
+    <div class="form-card">
+      <h3>Delete Customer</h3>
+      <p>Are you sure you want to delete "<strong>{{ customer }}</strong>"?</p>
+      <form method="post">
+        {% csrf_token %}
+        <div class="form-actions">
+          <button type="submit" class="btn btn-danger">Delete</button>
+          <a href="{% url 'admin_dashboard' %}" class="btn btn-secondary">Cancel</a>
+        </div>
+      </form>
+    </div>
+  </body>
+</html>
