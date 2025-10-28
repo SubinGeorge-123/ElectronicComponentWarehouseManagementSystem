@@ -1,0 +1,358 @@
+{% extends 'base.html' %} {% block content %}
+{% load static %}
+
+<style>
+  body {
+    background-color: #f3f4f6;
+    font-family: "Poppins", sans-serif;
+  }
+
+  .dashboard-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 30px 50px;
+    background-color: #1e3a8a;
+    color: #fff;
+    border-bottom: 4px solid #2563eb;
+  }
+
+  .dashboard-header h2 {
+    font-size: 28px;
+    font-weight: 700;
+  }
+
+  .logout-btn {
+    background: #ef4444;
+    border: none;
+    border-radius: 8px;
+    color: #fff;
+    font-weight: 600;
+    padding: 8px 18px;
+    transition: 0.3s;
+  }
+
+  .logout-btn:hover {
+    background: #dc2626;
+    transform: scale(1.03);
+  }
+
+  .dashboard-container {
+    max-width: 1200px;
+    margin: 40px auto;
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 30px;
+  }
+
+  .card-box {
+    width: 280px;
+    height: 180px;
+    background: #fff;
+    border-radius: 16px;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+    text-align: center;
+    padding: 30px 20px;
+    transition: all 0.3s ease;
+    cursor: pointer;
+  }
+
+  .card-box:hover {
+    transform: translateY(-6px);
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.2);
+  }
+
+  .card-icon {
+    font-size: 50px;
+    color: #2563eb;
+    /* margin-bottom: 15px; */
+  }
+
+  .card-title {
+    font-size: 20px;
+    font-weight: 600;
+    color: #111827;
+    margin-bottom: 8px;
+  }
+
+  .card-desc {
+    color: #6b7280;
+    font-size: 14px;
+  }
+
+  /* Table sections */
+  .table-section {
+    max-width: 1100px;
+    margin: 40px auto;
+    background: #fff;
+    border-radius: 16px;
+    padding: 25px;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+  }
+
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    border: 1px solid #d1d5db;
+    margin-top: 15px;
+  }
+
+  th,
+  td {
+    border: 1px solid #d1d5db;
+    padding: 12px;
+    text-align: left;
+  }
+
+  th {
+    background: #f3f4f6;
+    font-weight: 600;
+  }
+
+  .btn {
+    border-radius: 6px;
+    font-size: 14px;
+    padding: 6px 10px;
+  }
+
+  .btn-custom {
+    background-color: #2563eb;
+    color: #fff;
+  }
+
+  .btn-custom:hover {
+    background-color: #1e40af;
+  }
+
+  .hidden {
+    display: none;
+  }
+  .stock-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 20px;
+  }
+
+  .stock-card {
+    background: #fff;
+    border-radius: 12px;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+    overflow: hidden;
+    transition: transform 0.2s ease;
+  }
+
+  .stock-card:hover {
+    transform: scale(1.02);
+  }
+
+  .stock-image {
+    width: 100%;
+    height: 200px;
+    object-fit: cover;
+  }
+
+  .stock-info {
+    padding: 15px;
+  }
+
+  .stock-info h5 {
+    margin-bottom: 10px;
+    font-size: 18px;
+  }
+
+  .stock-info p {
+    margin: 0;
+    font-size: 14px;
+  }
+
+  .stock-actions {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 10px;
+  }
+  .active-card {
+    border: 3px solid #2563eb;
+    box-shadow: 0 0 15px rgba(37, 99, 235, 0.4);
+  }
+</style>
+
+<div class="dashboard-header">
+  <h2>Welcome, Admin {{ user.username }}</h2>
+  <a href="{% url 'logout' %}" class="logout-btn">Logout</a>
+</div>
+
+<div class="dashboard-container">
+  <div class="card-box" onclick="showSection('stocks')">
+    <div class="card-icon">📦</div>
+    <div class="card-title">Stock Management</div>
+    <div class="card-desc">View, add, or update stock items.</div>
+  </div>
+
+  <div class="card-box" onclick="showSection('customers')">
+    <div class="card-icon">👤</div>
+    <div class="card-title">Customer Management</div>
+    <div class="card-desc">Create, edit, and delete customers.</div>
+  </div>
+
+  <div class="card-box" onclick="showSection('requests')">
+    <div class="card-icon">📨</div>
+    <div class="card-title">Pending Requests</div>
+    <div class="card-desc">Approve or reject stock requests.</div>
+  </div>
+</div>
+
+<!-- STOCK SECTION -->
+<div id="stocks" class="table-section">
+  <h3 class="mb-3">Stock Management</h3>
+  <a href="{% url 'create_stock' %}" class="btn btn-custom mb-3"
+    >+ Add New Stock</a
+  >
+
+  {% if stocks %}
+  <div class="stock-grid">
+    {% for stock in stocks %}
+    <div class="stock-card">
+      {% if stock.image %}
+      <img
+        src="{{ stock.image.url }}"
+        alt="{{ stock.name }}"
+        class="stock-image"
+      />
+      {% else %}
+      <img
+        src="{% static 'images/noImage.jpg' %}"
+        alt="No image"
+        class="stock-image"
+      />  
+      {% endif %}
+
+      <div class="stock-info">
+        <h5>{{ stock.name }}</h5>
+        <p><strong>Category:</strong> {{ stock.category }}</p>
+        <p><strong>Quantity:</strong> {{ stock.quantity }}</p>
+        <p><strong>Price:</strong> €{{ stock.price }}</p>
+        <div class="stock-actions">
+          <a href="{% url 'edit_stock' stock.id %}" class="btn btn-info btn-sm"
+            >Edit</a
+          >
+          <a
+            href="{% url 'delete_stock' stock.id %}"
+            class="btn btn-danger btn-sm"
+            >Delete</a
+          >
+        </div>
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+  {% else %}
+  <p>No stock items found.</p>
+  {% endif %}
+</div>
+
+<!-- CUSTOMER SECTION -->
+<div id="customers" class="table-section hidden">
+  <h3>Customer Management</h3>
+  <a href="{% url 'create_customer' %}" class="btn btn-custom mb-3"
+    >+ Add New Customer</a
+  >
+  <table>
+    <thead>
+      <tr>
+        <th>ID</th>
+        <th>Customer Name</th>
+        <th>Email</th>
+        <th>Actions</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for customer in customers %}
+      <tr>
+        <td>{{ customer.id }}</td>
+        <td>{{ customer.first_name }} {{ customer.last_name }}</td>
+        <td>{{ customer.email }}</td>
+        <td>
+          <a
+            href="{% url 'edit_customer' customer.id %}"
+            class="btn btn-info btn-sm"
+            >Edit</a
+          >
+          <a
+            href="{% url 'delete_customer' customer.id %}"
+            class="btn btn-danger btn-sm"
+            >Delete</a
+          >
+        </td>
+      </tr>
+      {% empty %}
+      <tr>
+        <td colspan="4">No customers found.</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+
+<!-- PENDING REQUESTS SECTION -->
+<div id="requests" class="table-section hidden">
+  <h3>Pending Stock Requests</h3>
+  <table>
+    <thead>
+      <tr>
+        <th>ID</th>
+        <th>Customer</th>
+        <th>Component</th>
+        <th>Quantity</th>
+        <th>Status</th>
+        <th>Actions</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for req in pending_requests %}
+      <tr>
+        <td>{{ req.id }}</td>
+        <td>{{ req.customer.first_name }} {{ req.customer.last_name }}</td>
+        <td>{{ req.stock.name }}</td>
+        <td>{{ req.quantity }}</td>
+        <td>{{ req.status }}</td>
+        <td>
+          <a
+            href="{% url 'proceed_request' req.id %}"
+            class="btn btn-success btn-sm"
+            >Proceed</a
+          >
+        </td>
+      </tr>
+      {% empty %}
+      <tr>
+        <td colspan="6">No pending requests.</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+
+<script>
+  function showSection(sectionId) {
+    const sections = document.querySelectorAll(".table-section");
+    sections.forEach((s) => s.classList.add("hidden"));
+    document.getElementById(sectionId).classList.remove("hidden");
+
+    // Highlight selected card
+    const cards = document.querySelectorAll(".card-box");
+    cards.forEach((card) => card.classList.remove("active-card"));
+    document
+      .querySelector(`[onclick="showSection('${sectionId}')"]`)
+      ?.classList.add("active-card");
+
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  }
+
+  // Show Stock Management by default when page loads
+  document.addEventListener("DOMContentLoaded", () => {
+    showSection("stocks");
+  });
+</script>
+
+{% endblock %}

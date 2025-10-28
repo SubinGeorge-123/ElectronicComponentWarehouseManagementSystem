@@ -1,0 +1,477 @@
+{% extends 'base.html' %} {% block content %}
+{% load static %}
+
+<style>
+  body {
+    background-color: #f3f4f6;
+    font-family: "Poppins", sans-serif;
+  }
+
+  .dashboard-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 30px 50px;
+    background-color: #1e3a8a;
+    color: #fff;
+    border-bottom: 4px solid #2563eb;
+  }
+
+  .dashboard-header h2 {
+    font-size: 28px;
+    font-weight: 700;
+  }
+
+  .logout-btn {
+    background: #ef4444;
+    border: none;
+    border-radius: 8px;
+    color: #fff;
+    font-weight: 600;
+    padding: 8px 18px;
+    transition: 0.3s;
+  }
+
+  .logout-btn:hover {
+    background: #dc2626;
+    transform: scale(1.03);
+  }
+
+  .dashboard-container {
+    max-width: 1200px;
+    margin: 40px auto;
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 30px;
+  }
+
+  .card-box {
+    width: 280px;
+    height: 180px;
+    background: #fff;
+    border-radius: 16px;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+    text-align: center;
+    padding: 30px 20px;
+    transition: all 0.3s ease;
+    cursor: pointer;
+  }
+
+  .card-box:hover {
+    transform: translateY(-6px);
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.2);
+  }
+
+  .card-icon {
+    font-size: 50px;
+    color: #2563eb;
+  }
+
+  .card-title {
+    font-size: 20px;
+    font-weight: 600;
+    color: #111827;
+    margin-bottom: 8px;
+  }
+
+  .card-desc {
+    color: #6b7280;
+    font-size: 14px;
+  }
+
+  /* Stock Grid & Cards */
+  .stock-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 20px;
+    margin-top: 20px;
+  }
+
+  .stock-card {
+    background: #fff;
+    border-radius: 12px;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+    overflow: hidden;
+    transition: transform 0.2s ease;
+    border-left: 4px solid #2563eb;
+  }
+
+  .stock-card:hover {
+    transform: scale(1.02);
+  }
+
+  .stock-card.approved {
+    border-left-color: #10b981;
+  }
+
+  .stock-card.rejected {
+    border-left-color: #ef4444;
+  }
+
+  .stock-card.pending {
+    border-left-color: #f59e0b;
+  }
+
+  .stock-image {
+    width: 100%;
+    height: 180px;
+    object-fit: cover;
+  }
+
+  .stock-info {
+    padding: 15px;
+  }
+
+  .stock-info h5 {
+    margin-bottom: 10px;
+    font-size: 18px;
+  }
+
+  .stock-info p {
+    margin: 4px 0;
+    font-size: 14px;
+  }
+
+  .status-badge {
+    display: inline-block;
+    padding: 4px 12px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 600;
+    text-transform: uppercase;
+  }
+
+  .status-approved {
+    background: #d1fae5;
+    color: #065f46;
+  }
+
+  .status-pending {
+    background: #fef3c7;
+    color: #92400e;
+  }
+
+  .status-rejected {
+    background: #fee2e2;
+    color: #991b1b;
+  }
+
+  .stock-actions {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 10px;
+    gap: 10px;
+  }
+
+  .estimate-input {
+    width: 70px;
+    padding: 6px 8px;
+    border-radius: 6px;
+    border: 1px solid #d1d5db;
+  }
+
+  .btn {
+    border-radius: 6px;
+    font-size: 14px;
+    padding: 6px 10px;
+    cursor: pointer;
+    border: none;
+    text-decoration: none;
+    display: inline-block;
+    text-align: center;
+    transition: all 0.3s ease;
+  }
+
+  .btn-custom {
+    background-color: #2563eb;
+    color: #fff;
+  }
+
+  .btn-custom:hover {
+    background-color: #1e40af;
+  }
+
+  .btn-success {
+    background-color: #10b981;
+    color: #fff;
+  }
+
+  .btn-success:hover {
+    background-color: #059669;
+  }
+
+  .btn-secondary {
+    background-color: #6b7280;
+    color: #fff;
+  }
+
+  .btn-secondary:hover {
+    background-color: #4b5563;
+  }
+
+  .hidden {
+    display: none;
+  }
+
+  .table-section {
+    max-width: 1100px;
+    margin: 40px auto;
+    background: #fff;
+    border-radius: 16px;
+    padding: 25px;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+  }
+
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    border: 1px solid #d1d5db;
+    margin-top: 15px;
+  }
+
+  th, td {
+    border: 1px solid #d1d5db;
+    padding: 12px;
+    text-align: left;
+  }
+
+  th {
+    background: #f3f4f6;
+    font-weight: 600;
+  }
+
+  .active-card {
+    border: 3px solid #2563eb;
+    box-shadow: 0 0 15px rgba(37, 99, 235, 0.4);
+  }
+
+  .request-form {
+    background: #f8fafc;
+    padding: 20px;
+    border-radius: 12px;
+    margin-top: 20px;
+  }
+
+  .form-group {
+    margin-bottom: 15px;
+  }
+
+  .form-group label {
+    display: block;
+    margin-bottom: 5px;
+    font-weight: 600;
+    color: #374151;
+  }
+
+  .form-control {
+    width: 100%;
+    padding: 8px 12px;
+    border: 1px solid #d1d5db;
+    border-radius: 6px;
+    font-size: 14px;
+  }
+
+  .empty-state {
+    text-align: center;
+    padding: 40px;
+    color: #6b7280;
+  }
+
+  .empty-state .icon {
+    font-size: 48px;
+    margin-bottom: 10px;
+  }
+</style>
+
+<div class="dashboard-header">
+  <h2>Welcome, {{ user.first_name|default:user.username }}</h2>
+  <a href="{% url 'logout' %}" class="logout-btn">Logout</a>
+</div>
+
+<div class="dashboard-container">
+  <div class="card-box" onclick="showSection('my_stocks')">
+    <div class="card-icon">📦</div>
+    <div class="card-title">My Approved Stocks</div>
+    <div class="card-desc">View your approved stock requests</div>
+  </div>
+
+  <div class="card-box" onclick="showSection('my_requests')">
+    <div class="card-icon">📋</div>
+    <div class="card-title">My Requests</div>
+    <div class="card-desc">Check all your stock requests status</div>
+  </div>
+
+  <div class="card-box" onclick="showSection('request_stock')">
+    <div class="card-icon">🛒</div>
+    <div class="card-title">Request New Stock</div>
+    <div class="card-desc">Request new stock items</div>
+  </div>
+</div>
+
+<!-- MY APPROVED STOCKS SECTION -->
+<div id="my_stocks" class="table-section">
+  <h3>My Approved Stocks</h3>
+  {% if approved_requests %}
+  <div class="stock-grid">
+    {% for req in approved_requests %}
+    <div class="stock-card approved">
+      {% if req.stock.image %}
+      <img src="{{ req.stock.image.url }}" alt="{{ req.stock.name }}" class="stock-image" />
+      {% else %}
+      <img src="{% static 'images/noImage.jpg' %}" alt="No image" class="stock-image" />
+      {% endif %}
+
+      <div class="stock-info">
+        <h5>{{ req.stock.name }}</h5>
+        <p><strong>Category:</strong> {{ req.stock.category }}</p>
+        <p><strong>Quantity Approved:</strong> {{ req.quantity }}</p>
+        <p><strong>Price per unit:</strong> €{{ req.stock.price }}</p>
+        <p><strong>Total Cost:</strong> €{{ req.total_cost }}</p>
+        <p><strong>Approved Date:</strong> {{ req.updated_at|date:"M d, Y" }}</p>
+        <span class="status-badge status-approved">Approved</span>
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+  {% else %}
+  <div class="empty-state">
+    <div class="icon">📦</div>
+    <h4>No Approved Stocks</h4>
+    <p>Your approved stock requests will appear here.</p>
+  </div>
+  {% endif %}
+</div>
+
+<!-- MY REQUESTS SECTION -->
+<div id="my_requests" class="table-section hidden">
+  <h3>My Stock Requests</h3>
+  {% if user_requests %}
+  <table>
+    <thead>
+      <tr>
+        <th>Component</th>
+        <th>Quantity</th>
+        <th>Total Cost</th>
+        <th>Status</th>
+        <th>Requested Date</th>
+        <th>Admin Note</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for req in user_requests %}
+      <tr>
+        <td>{{ req.stock.name }}</td>
+        <td>{{ req.quantity }}</td>
+        <td>€{{ req.total_cost }}</td>
+        <td>
+          <span class="status-badge 
+            {% if req.status == 'APPROVED' %}status-approved
+            {% elif req.status == 'REJECTED' %}status-rejected
+            {% else %}status-pending{% endif %}">
+            {{ req.status }}
+          </span>
+        </td>
+        <td>{{ req.created_at|date:"M d, Y" }}</td>
+        <td>{{ req.admin_note|default:"-" }}</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  {% else %}
+  <div class="empty-state">
+    <div class="icon">📋</div>
+    <h4>No Requests Found</h4>
+    <p>You haven't made any stock requests yet.</p>
+  </div>
+  {% endif %}
+</div>
+
+<!-- REQUEST STOCK SECTION -->
+<div id="request_stock" class="table-section hidden">
+  <h3>Request New Stock</h3>
+  
+  {% if available_stocks %}
+  <div class="stock-grid">
+    {% for stock in available_stocks %}
+    <div class="stock-card">
+      {% if stock.image %}
+      <img src="{{ stock.image.url }}" alt="{{ stock.name }}" class="stock-image" />
+      {% else %}
+      <img src="{% static 'images/noImage.jpg' %}" alt="No image" class="stock-image" />
+      {% endif %}
+
+      <div class="stock-info">
+        <h5>{{ stock.name }}</h5>
+        <p><strong>Category:</strong> {{ stock.category }}</p>
+        <!-- <p><strong>Available Quantity:</strong> {{ stock.quantity }}</p> -->
+        <p><strong>Price:</strong> €{{ stock.price }}</p>
+
+        <form method="post" action="{% url 'request_stock' %}" class="request-form">
+          {% csrf_token %}
+          <input type="hidden" name="stock" value="{{ stock.id }}">
+          
+          <div class="form-group">
+            <label for="quantity-{{ stock.id }}">Quantity:</label>
+            <input 
+              type="number" 
+              id="quantity-{{ stock.id }}" 
+              name="quantity" 
+              class="form-control" 
+              min="1" 
+              value="1" 
+              required
+              onchange="updateTotalDisplay({{ stock.id }}, {{ stock.price }})"
+            >
+          </div>
+
+          <div class="form-group">
+            <label>Total Cost:</label>
+            <p><strong>€<span id="total-display-{{ stock.id }}">{{ stock.price }}</span></strong></p>
+          </div>
+
+          <button type="submit" class="btn btn-success" style="width: 100%;">
+            Request Stock
+          </button>
+        </form>
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+  {% else %}
+  <div class="empty-state">
+    <div class="icon">🛒</div>
+    <h4>No Stock Available</h4>
+    <p>There are currently no stock items available for request.</p>
+  </div>
+  {% endif %}
+</div>
+
+<script>
+  function showSection(sectionId) {
+    const sections = document.querySelectorAll(".table-section");
+    sections.forEach((s) => s.classList.add("hidden"));
+    document.getElementById(sectionId).classList.remove("hidden");
+
+    const cards = document.querySelectorAll(".card-box");
+    cards.forEach((card) => card.classList.remove("active-card"));
+    document
+      .querySelector(`[onclick="showSection('${sectionId}')"]`)
+      ?.classList.add("active-card");
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  }
+
+  function updateTotalDisplay(stockId, price) {
+    const qtyInput = document.getElementById(`quantity-${stockId}`);
+    const totalDisplay = document.getElementById(`total-display-${stockId}`);
+    const qty = parseInt(qtyInput.value) || 1;
+    totalDisplay.innerText = (price * qty).toFixed(2);
+  }
+
+  document.addEventListener("DOMContentLoaded", () => {
+    showSection("my_stocks");
+  });
+</script>
+
+{% endblock %}
