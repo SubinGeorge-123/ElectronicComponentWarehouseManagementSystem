@@ -1,0 +1,8 @@
+branch-defaults:
+  main:
+    environment: electronicComponentWarehouseMana-env
+global:
+  application_name: electronicComponentWarehouseManagementSystem
+  default_region: eu-west-1
+  default_platform: Python 3.11
+  workspace_type: Application
