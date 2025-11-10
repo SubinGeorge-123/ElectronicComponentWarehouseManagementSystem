@@ -125,19 +125,27 @@ USE_I18N = True
 USE_TZ = True
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
-# --- AWS S3 SETTINGS ---
-AWS_STORAGE_BUCKET_NAME = "electronic-component-warehouse-management-system-bucket"
-AWS_S3_REGION_NAME = "eu-east-1"
-AWS_DEFAULT_ACL = None
-AWS_S3_CUSTOM_DOMAIN = f"{AWS_STORAGE_BUCKET_NAME}.s3.amazonaws.com"
+# # --- AWS S3 SETTINGS ---
+# AWS_STORAGE_BUCKET_NAME = "electronic-component-warehouse-management-system-bucket"
+# AWS_S3_REGION_NAME = "eu-east-1"
+# AWS_DEFAULT_ACL = None
+# AWS_S3_CUSTOM_DOMAIN = f"{AWS_STORAGE_BUCKET_NAME}.s3.amazonaws.com"
 
-# --- MEDIA (for ImageField) ---
-DEFAULT_FILE_STORAGE = "storages.backends.s3boto3.S3Boto3Storage"
-MEDIA_URL = f"https://{AWS_S3_CUSTOM_DOMAIN}/media/"
+# # --- MEDIA (for ImageField) ---
+# DEFAULT_FILE_STORAGE = "storages.backends.s3boto3.S3Boto3Storage"
+# MEDIA_URL = f"https://{AWS_S3_CUSTOM_DOMAIN}/media/"
 
-# --- STATIC (for noImage etc.) ---
-STATICFILES_STORAGE = "storages.backends.s3boto3.S3Boto3Storage"
-STATIC_URL = f"https://{AWS_S3_CUSTOM_DOMAIN}/static/"
+# # --- STATIC (for noImage etc.) ---
+# STATICFILES_STORAGE = "storages.backends.s3boto3.S3Boto3Storage"
+# STATIC_URL = f"https://{AWS_S3_CUSTOM_DOMAIN}/static/"
 
-# Optional: for local static during dev
-STATICFILES_DIRS = [BASE_DIR / "static"]
+# # Optional: for local static during dev
+# STATICFILES_DIRS = [BASE_DIR / "static"]
+
+STATIC_URL = '/static/'
+STATICFILES_DIRS = [
+    BASE_DIR / "static",
+]
+STATIC_ROOT = BASE_DIR / "staticfiles"
+MEDIA_URL = '/media/'
+MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
