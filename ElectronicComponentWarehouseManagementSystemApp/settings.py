@@ -88,8 +88,8 @@ DATABASES = {
         'ENGINE': 'django.db.backends.postgresql',
         'NAME': os.environ.get('RDS_DB_NAME', 'postgres'),
         'USER': os.environ.get('RDS_USERNAME', 'ebuser'),
-        'PASSWORD': os.environ.get('RDS_PASSWORD', ''),
-        'HOST': os.environ.get('RDS_HOSTNAME', 'localhost'),
+        'PASSWORD': os.environ.get('RDS_PASSWORD', 'yourpassword'),
+        'HOST': os.environ.get('RDS_HOSTNAME', 'awseb-e-4hkwamcfdn-stack-awsebrdsdatabase-p3islopw1rqx.c5rcme3upuyj.us-east-1.rds.amazonaws.com'),
         'PORT': os.environ.get('RDS_PORT', '5432'),
     }
 }
