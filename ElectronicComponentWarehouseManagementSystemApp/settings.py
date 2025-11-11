@@ -86,11 +86,11 @@ WSGI_APPLICATION = 'ElectronicComponentWarehouseManagementSystemApp.wsgi.applica
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
-        'NAME': os.environ.get('RDS_DB_NAME', 'postgres'),
-        'USER': os.environ.get('RDS_USERNAME', 'ebuser'),
-        'PASSWORD': os.environ.get('RDS_PASSWORD', 'yourpassword'),
-        'HOST': os.environ.get('RDS_HOSTNAME', 'awseb-e-4hkwamcfdn-stack-awsebrdsdatabase-p3islopw1rqx.c5rcme3upuyj.us-east-1.rds.amazonaws.com'),
-        'PORT': os.environ.get('RDS_PORT', '5432'),
+        'NAME': 'mysql',
+        'USER': 'ebuser',
+        'PASSWORD': 'yourpassword',
+        'HOST': 'awseb-e-wpzchaqmza-stack-awsebrdsdatabase-ilmutu59ngxv.c5rcme3upuyj.us-east-1.rds.amazonaws.com',
+        'PORT': '3306',
     }
 }
 
