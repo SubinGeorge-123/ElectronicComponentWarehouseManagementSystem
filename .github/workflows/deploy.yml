@@ -18,42 +18,13 @@ jobs:
         with:
           python-version: '3.11'
 
-      - name: Install dependencies and test
+      - name: Install dependencies
         run: |
-          sudo apt-get update
-          sudo apt-get install -y default-libmysqlclient-dev build-essential pkg-config
           python -m pip install --upgrade pip
           pip install -r requirements.txt
-           # Only fail on errors, not warnings
-          python manage.py check --fail-level ERROR || echo "Django check completed"
 
-      - name: Validate application structure
-        run: |
-          echo "=== Application Structure ==="
-          find . -name "*.py" -path "*/settings.py" -o -name "wsgi.py" -o -name "manage.py" | head -20
-          echo "=== Requirements Check ==="
-          grep -E "(psycopg|postgres)" requirements.txt && echo "WARNING: PostgreSQL dependencies found" || echo "No PostgreSQL dependencies"
-          grep -E "(mysql|MySQL)" requirements.txt && echo "MySQL dependencies found" || echo "No MySQL dependencies found"
-
-      - name: Create deployment package
-        run: |
-          # Create deployment package excluding unnecessary files
-          zip -r deploy.zip . \
-            -x '*.git*' \
-            -x '*.github*' \
-            -x '*.env*' \
-            -x 'env/*' \
-            -x 'venv/*' \
-            -x '.venv/*' \
-            -x '*.pem' \
-            -x 'node_modules/*' \
-            -x '*.log' \
-            -x '.DS_Store' \
-            -x 'test_*' \
-            -x '*.sqlite3' \
-            -x 'db.sqlite3' \
-            -x '*.pyc' \
-            -x '__pycache__/*'
+      - name: Zip application
+        run: zip -r deploy.zip . -x '*.git*'
 
       - name: Deploy to Elastic Beanstalk
         uses: einaregilsson/beanstalk-deploy@v22
@@ -61,11 +32,8 @@ jobs:
           aws_access_key: ${{ secrets.AWS_ACCESS_KEY_ID }}
           aws_secret_key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws_session_token: ${{ secrets.AWS_SESSION_TOKEN }}
-          application_name: electronicComponentWarehouseManagementSystem
-          environment_name: electronicComponentWarehouseMana-env
-          region: us-east-1
-          version_label: ${{ github.run_id }}-${{ github.sha }}
+          application_name: ${{ secrets.EB_APPLICATION_NAME }}
+          environment_name: ${{ secrets.EB_ENVIRONMENT_NAME }}
+          region: ${{ secrets.AWS_REGION }}
+          version_label: ${{ github.run_id }}
           deployment_package: deploy.zip
-          wait_for_deployment: true
-          wait_for_environment_recovery: 600
-          verbose: true

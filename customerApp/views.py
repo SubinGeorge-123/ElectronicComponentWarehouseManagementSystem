@@ -10,17 +10,17 @@ from django.contrib import messages
 from django.conf import settings
 from .models import Customer
 from .forms import CustomerForm
+from .dynamodb import CustomerDB
 
 def create_customer(request):
-    if not request.user.is_superuser: 
+    if not request.user.is_superuser:
         return redirect('login')
+
     if request.method == 'POST':
         form = CustomerForm(request.POST)
         if form.is_valid():
             pwd = generate_password()
-            print("Generated password:", pwd)
             try:
-                # Create User account
                 user = User.objects.create_user(
                     username=form.cleaned_data['email'],
                     email=form.cleaned_data['email'],
@@ -30,59 +30,74 @@ def create_customer(request):
                     is_superuser=False,
                     is_staff=False
                 )
-                
-                # Create Customer record linked to User
-                customer = form.save(commit=False)
-                customer.user = user
-                customer.save()
 
-                # Send email with credentials
-                try:
-                    ses = boto3.client('ses', region_name=getattr(settings, 'AWS_REGION', 'us-east-1'))
-                    ses.send_email(
-                        Source=settings.DEFAULT_FROM_EMAIL,
-                        Destination={'ToAddresses': [customer.email]},
-                        Message={
-                            'Subject': {'Data': 'Your Stock Management System Account'},
-                            'Body': {'Text': {'Data': f"""Hello {customer.first_name}, Your account has been created! Login: {customer.email} Password: {pwd} Login at: http://yourdomain.com/login/ Best regards, Stock Management Team"""}}
-                        }
-                    )
-                    messages.success(request, "Customer created and credentials emailed!")
-                except Exception as e:
-                    messages.warning(request, f"Customer created but email failed: {e}")
+                # Save in DynamoDB
+                CustomerDB.create(
+                    user_id=user.id,
+                    first_name=form.cleaned_data['first_name'],
+                    last_name=form.cleaned_data['last_name'],
+                    email=form.cleaned_data['email']
+                )
+
+                # Send credentials via SES
+                ses = boto3.client('ses', region_name=getattr(settings, 'AWS_REGION', 'us-east-1'))
+                ses.send_email(
+                    Source=settings.DEFAULT_FROM_EMAIL,
+                    Destination={'ToAddresses': [form.cleaned_data['email']]},
+                    Message={
+                        'Subject': {'Data': 'Your Stock Management Account'},
+                        'Body': {'Text': {'Data': f"""Hello {form.cleaned_data['first_name']},
+Your account has been created!
+
+Login: {form.cleaned_data['email']}
+Password: {pwd}
+Login at: http://yourdomain.com/login/
+"""}}}
+                )
+                messages.success(request, "Customer created and email sent!")
                 return redirect('admin_dashboard')
-            except IntegrityError:
-                messages.error(request, "A user with this email already exists.")
             except Exception as e:
-                messages.error(request, f"Error creating customer: {e}")   
+                messages.error(request, f"Error: {e}")
     else:
         form = CustomerForm()
     return render(request, 'create_customer.html', {'form': form})
 
-def edit_customer(request, customer_id):
-    if not request.user.is_superuser: 
+
+def edit_customer(request, email):
+    if not request.user.is_superuser:
         return redirect('login')
-    customer = get_object_or_404(Customer, id=customer_id)
+
+    customer = CustomerDB.get(email)
+    if not customer:
+        messages.error(request, "Customer not found.")
+        return redirect('admin_dashboard')
+
     if request.method == 'POST':
-        form = CustomerForm(request.POST, instance=customer)
+        form = CustomerForm(request.POST)
         if form.is_valid():
-            form.save()
+            data = {
+                'first_name': form.cleaned_data['first_name'],
+                'last_name': form.cleaned_data['last_name']
+            }
+            CustomerDB.update(email, data)
             messages.success(request, "Customer updated.")
             return redirect('admin_dashboard')
     else:
-        form = CustomerForm(instance=customer)
+        form = CustomerForm(initial=customer)
     return render(request, 'edit_customer.html', {'form': form, 'customer': customer})
 
 
-def delete_customer(request, customer_id):
-    if not request.user.is_superuser: 
+
+def delete_customer(request, email):
+    if not request.user.is_superuser:
         return redirect('login')
-    customer = get_object_or_404(Customer, id=customer_id)
+
     if request.method == 'POST':
-        customer.delete()
+        CustomerDB.delete(email)
         messages.success(request, "Customer deleted.")
         return redirect('admin_dashboard')
-    return render(request, 'confirm_delete_customer.html', {'customer': customer})
+    return render(request, 'confirm_delete_customer.html', {'email': email})
+
 
 def generate_password(length=10):
     alphabet = string.ascii_letters + string.digits
