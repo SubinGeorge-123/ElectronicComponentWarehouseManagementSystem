@@ -7,6 +7,9 @@ from django.contrib import messages
 from django.conf import settings
 from .models import StockRequest
 from stockApp.models import Stock
+from .dynamodb_stockrequest import StockRequestDB
+from customerApp.dynamodb import CustomerDB  # since customer now in DynamoDB
+
 
 def invoke_lambda_recommendation(stock_id, requested_qty):
     """
@@ -43,49 +46,55 @@ def invoke_lambda_recommendation(stock_id, requested_qty):
 def proceed_request(request, req_id):
     if not request.user.is_superuser:
         return redirect('login')
-    req = get_object_or_404(StockRequest, id=req_id)
-    # call lambda to get recommendation
-    rec = invoke_lambda_recommendation(req.stock.id, req.quantity)
-    # We show recommendation but allow admin to force action.
+
+    req = StockRequestDB.get(req_id)
+    if not req:
+        messages.error(request, "Request not found.")
+        return redirect('admin_dashboard')
+
+    # fetch stock info from SQL
+    stock = Stock.objects.filter(id=req['stock_id']).first()
+    if not stock:
+        messages.error(request, "Stock not found.")
+        return redirect('admin_dashboard')
+
+    rec = invoke_lambda_recommendation(stock.id, req['quantity'])
+
     if request.method == 'POST':
-        action = request.POST.get('action')  # 'approve' or 'reject'
+        action = request.POST.get('action')
         admin_note = request.POST.get('admin_note', '')
+
         if action == 'approve':
-            if req.stock.quantity >= req.quantity:
-                req.stock.quantity -= req.quantity
-                req.stock.save()
-                req.status = 'APPROVED'
-                req.admin_note = admin_note
-                req.save()
-                # send SES to customer
+            if stock.quantity >= req['quantity']:
+                stock.quantity -= req['quantity']
+                stock.save()
+                StockRequestDB.update(req_id, {'status': 'APPROVED', 'admin_note': admin_note})
+                # notify via SES
                 try:
                     ses = boto3.client('ses', region_name=getattr(settings, 'AWS_REGION', 'us-east-1'))
                     ses.send_email(
                         Source=settings.DEFAULT_FROM_EMAIL,
-                        Destination={'ToAddresses': [req.customer.email]},
+                        Destination={'ToAddresses': [req['customer_email']]},
                         Message={
-                            'Subject': {'Data': 'Your stock request has been approved'},
-                            'Body': {'Text': {'Data': f"Your request #{req.id} for {req.stock.name} has been approved."}}
+                            'Subject': {'Data': 'Stock Request Approved'},
+                            'Body': {'Text': {'Data': f"Your request for {stock.name} has been approved."}}
                         }
                     )
                 except Exception as e:
                     print("SES error:", e)
                 messages.success(request, "Request approved.")
             else:
-                messages.error(request, "Not enough stock to approve.")
+                messages.error(request, "Not enough stock.")
         else:
-            req.status = 'REJECTED'
-            req.admin_note = admin_note
-            req.save()
-            # send rejection email
+            StockRequestDB.update(req_id, {'status': 'REJECTED', 'admin_note': admin_note})
             try:
                 ses = boto3.client('ses', region_name=getattr(settings, 'AWS_REGION', 'us-east-1'))
                 ses.send_email(
                     Source=settings.DEFAULT_FROM_EMAIL,
-                    Destination={'ToAddresses': [req.customer.email]},
+                    Destination={'ToAddresses': [req['customer_email']]},
                     Message={
-                        'Subject': {'Data': 'Your stock request has been rejected'},
-                        'Body': {'Text': {'Data': f"Your request #{req.id} has been rejected. Note: {admin_note}"}}
+                        'Subject': {'Data': 'Stock Request Rejected'},
+                        'Body': {'Text': {'Data': f"Your request was rejected. Note: {admin_note}"}}
                     }
                 )
             except Exception as e:
@@ -93,5 +102,5 @@ def proceed_request(request, req_id):
             messages.success(request, "Request rejected.")
         return redirect('admin_dashboard')
 
-    # GET -> show confirmation page with recommendation
-    return render(request, 'proceed_request.html', {'req': req, 'recommendation': rec})
+    return rende
+
